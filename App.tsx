@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { IntentBar } from './components/IntentBar';
+import { ConceptHero } from './sections/ConceptHero';
 import { Hero } from './sections/Hero';
 import { ProblemSolution } from './sections/ProblemSolution';
 import { Process } from './sections/Process';
@@ -9,18 +10,38 @@ import { Benefits } from './sections/Benefits';
 import { Pricing } from './sections/Pricing';
 import { FAQ } from './sections/FAQ';
 import { Footer } from './components/Footer';
-import { AnimatePresence, motion, useScroll, useSpring } from 'framer-motion';
+import { AnimatePresence, motion, useScroll, useSpring, useTransform } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 
 const App: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Scroll hooks
   const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
-  });
+  
+  // Smooth progress for the progress bar
+  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
+  
+  // Smooth progress for the blobs (slightly looser for organic feel)
+  const smoothProgress = useSpring(scrollYProgress, { stiffness: 50, damping: 20 });
+
+  // --- Traveler Blob Configuration ---
+  // Wanders from top to bottom of the viewport as you scroll the whole page
+  const travelerY = useTransform(smoothProgress, [0, 1], ['5vh', '85vh']);
+  // Weaves left and right
+  const travelerX = useTransform(smoothProgress, 
+    [0, 0.25, 0.5, 0.75, 1], 
+    ['85vw', '15vw', '75vw', '25vw', '50vw']
+  );
+  const travelerRotate = useTransform(smoothProgress, [0, 1], [0, 180]);
+  const travelerScale = useTransform(smoothProgress, [0, 0.5, 1], [1, 1.2, 0.8]);
+
+  // --- Ambient Background Parallax (Full Page Coverage) ---
+  const y1 = useTransform(smoothProgress, [0, 1], ['0%', '50%']);
+  const y2 = useTransform(smoothProgress, [0, 1], ['0%', '-50%']);
+  const r1 = useTransform(smoothProgress, [0, 1], [0, 90]);
+  const r2 = useTransform(smoothProgress, [0, 1], [0, -90]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,18 +52,63 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen relative font-sans text-slate-900 selection:bg-brand-primary/20 selection:text-brand-primary">
+    <div className="min-h-screen relative font-sans text-slate-900 selection:bg-brand-primary/20 selection:text-brand-primary overflow-hidden">
       {/* Scroll Progress Bar */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-brand-primary origin-left z-[60]"
         style={{ scaleX }}
       />
 
-      {/* Dynamic Liquid Background */}
+      {/* --- Dynamic Background System --- */}
       <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none bg-[#F5F5F7]">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-400/20 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob" />
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-400/20 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob animation-delay-2000" />
-        <div className="absolute bottom-[-20%] left-[20%] w-[50%] h-[50%] bg-pink-400/20 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob animation-delay-4000" />
+        
+        {/* 1. THE TRAVELER BLOB (The main fluid guide) */}
+        <motion.div
+          style={{ 
+            top: travelerY, 
+            left: travelerX, 
+            rotate: travelerRotate,
+            scale: travelerScale
+          }}
+          className="absolute w-[40vw] h-[40vw] max-w-[600px] max-h-[600px] -translate-x-1/2 -translate-y-1/2 z-0"
+        >
+           {/* Inner gradient blob with organic morph animation */}
+           <div className="w-full h-full bg-gradient-to-br from-brand-primary/40 via-brand-secondary/40 to-brand-accent/40 rounded-full blur-[80px] mix-blend-multiply animate-blob filter" />
+        </motion.div>
+
+
+        {/* 2. Ambient Blobs (Context) */}
+        {/* Top Left - Blue */}
+        <motion.div 
+          style={{ y: y1, rotate: r1 }}
+          className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] max-w-[800px] max-h-[800px] mix-blend-multiply opacity-40 filter blur-[90px]"
+        >
+          <div className="w-full h-full bg-blue-200 rounded-full animate-blob-slow" />
+        </motion.div>
+
+        {/* Top Right - Purple */}
+        <motion.div 
+          style={{ y: y2 }}
+          className="absolute top-[-5%] right-[-10%] w-[45vw] h-[45vw] max-w-[700px] max-h-[700px] mix-blend-multiply opacity-40 filter blur-[100px]"
+        >
+           <div className="w-full h-full bg-purple-200 rounded-full animate-blob" style={{ animationDelay: '2s' }} />
+        </motion.div>
+
+        {/* Bottom Left - Pinkish (Opposite Movement) */}
+        <motion.div 
+          style={{ y: useTransform(smoothProgress, [0, 1], ['60vh', '20vh']), rotate: r2 }}
+          className="absolute top-0 -left-[10%] w-[35vw] h-[35vw] max-w-[500px] max-h-[500px] mix-blend-multiply opacity-30 filter blur-[80px]"
+        >
+           <div className="w-full h-full bg-pink-200 rounded-full animate-blob" style={{ animationDelay: '4s' }} />
+        </motion.div>
+
+        {/* Bottom Right - Amber/Green (Static Anchor) */}
+        <motion.div 
+          style={{ y: useTransform(smoothProgress, [0, 1], ['80vh', '40vh']) }}
+          className="absolute top-0 -right-[5%] w-[40vw] h-[40vw] max-w-[600px] max-h-[600px] mix-blend-multiply opacity-30 filter blur-[90px]"
+        >
+           <div className="w-full h-full bg-brand-accent/20 rounded-full animate-blob-fast" style={{ animationDelay: '1s' }} />
+        </motion.div>
       </div>
 
       {/* Sticky Header / Intent Hub */}
@@ -109,7 +175,8 @@ const App: React.FC = () => {
         )}
       </AnimatePresence>
 
-      <main className="pt-32 pb-20 space-y-32 md:space-y-48">
+      <main className="pt-32 pb-20 space-y-32 md:space-y-48 relative z-10">
+        <ConceptHero />
         <Hero />
         <ProblemSolution />
         <Process />
