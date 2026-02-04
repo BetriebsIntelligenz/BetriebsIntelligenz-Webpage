@@ -1,5 +1,7 @@
 {
   "name": "BetriebsIntelligenz Ecosystem",
   "description": "Das erste Onboarding-Ökosystem, das Dienstleistung und Technologie vereint. Schluss mit dem Onboarding-Chaos.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "microphone"
+  ]
 }

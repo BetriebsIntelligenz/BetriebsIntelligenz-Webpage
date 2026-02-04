@@ -12,6 +12,7 @@ import { FAQ } from './sections/FAQ';
 import { StoryFlow } from './sections/StoryFlow';
 import { Footer } from './components/Footer';
 import { Logo } from './components/Logo';
+import { VoiceAgentChat } from './components/VoiceAgentChat';
 import { AnimatePresence, motion, useScroll, useSpring, useTransform } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 
@@ -192,6 +193,10 @@ const App: React.FC = () => {
       </main>
 
       <Footer />
+      
+      {/* --- Voice AI Agent --- */}
+      <VoiceAgentChat />
+
     </div>
   );
 };

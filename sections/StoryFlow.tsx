@@ -889,9 +889,11 @@ const StoryYoutubeDemo = () => {
                     <div className="relative bg-white rounded-lg overflow-hidden aspect-video border border-slate-800 bg-black">
                          <iframe 
                             className="w-full h-full object-cover"
-                            src="https://www.youtube.com/embed/iC9ma31BOB4?autoplay=1&mute=1&loop=1&playlist=iC9ma31BOB4&controls=0&modestbranding=1&rel=0&showinfo=0" 
+                            src="https://www.youtube-nocookie.com/embed/iC9ma31BOB4?autoplay=1&mute=1&loop=1&playlist=iC9ma31BOB4&controls=0&playsinline=1&rel=0"
                             title="Process AI Demo Video" 
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                            referrerPolicy="strict-origin-when-cross-origin"
+                            frameBorder="0"
                             allowFullScreen
                          />
                     </div>
