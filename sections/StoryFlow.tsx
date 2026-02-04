@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SectionWrapper } from '../components/SectionWrapper';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, FileWarning, Package, Database, Users, GitCommit, Calculator, Mic, Monitor, ArrowRight, CheckCircle2, XCircle, ChevronRight, User, Workflow } from 'lucide-react';
@@ -629,43 +629,220 @@ const BpmnAnimation = () => {
   );
 };
 
-// --- BLOCK 9: BPMN Feature ---
+// --- PROCESS AI SIMULATION COMPONENT (New) ---
+const Typewriter = ({ text }: { text: string }) => {
+    const [displayed, setDisplayed] = useState('');
+    
+    useEffect(() => {
+        let i = 0;
+        const timer = setInterval(() => {
+            setDisplayed(text.substring(0, i));
+            i++;
+            if (i > text.length) clearInterval(timer);
+        }, 50);
+        return () => clearInterval(timer);
+    }, [text]);
+
+    return <span>{displayed}<span className="animate-pulse">|</span></span>;
+};
+
+const ProcessAiSimulation = () => {
+  const [step, setStep] = useState(0);
+
+  // Sequence controller
+  useEffect(() => {
+    const sequence = async () => {
+      while(true) {
+        setStep(0); // Start
+        await new Promise(r => setTimeout(r, 1000));
+        setStep(1); // Show Chat/Input
+        await new Promise(r => setTimeout(r, 1000));
+        setStep(2); // Typing
+        await new Promise(r => setTimeout(r, 2000));
+        setStep(3); // Generating
+        await new Promise(r => setTimeout(r, 1500));
+        setStep(4); // Show Diagram
+        await new Promise(r => setTimeout(r, 4000)); // Hold result
+        // Loop
+      }
+    };
+    sequence();
+  }, []);
+
+  return (
+    <div className="w-full h-full bg-slate-50 relative overflow-hidden font-sans select-none">
+        {/* UI Header Mock */}
+        <div className="absolute top-0 left-0 right-0 h-8 bg-white border-b border-slate-200 flex items-center px-3 gap-2 z-10">
+            <div className="w-2 h-2 rounded-full bg-red-400"></div>
+            <div className="w-2 h-2 rounded-full bg-amber-400"></div>
+            <div className="w-2 h-2 rounded-full bg-green-400"></div>
+            <div className="ml-2 text-[8px] text-slate-400 font-medium">Process AI Modeler</div>
+        </div>
+
+        {/* Content Area */}
+        <div className="absolute inset-0 pt-8 flex items-center justify-center bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px]">
+            
+            {/* The Diagram (Visible in Step 4) */}
+            <AnimatePresence>
+                {step >= 4 && (
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex items-center gap-4"
+                    >
+                        {/* Start */}
+                        <div className="w-8 h-8 rounded-full border-2 border-slate-700 bg-white shadow-sm" />
+                        <div className="w-8 h-0.5 bg-slate-400" />
+                        
+                        {/* Task 1 */}
+                        <div className="w-24 h-16 rounded-lg border-2 border-slate-700 bg-white flex items-center justify-center text-[8px] font-bold shadow-sm">
+                            Bewerbung<br/>eingegangen
+                        </div>
+                         <div className="w-8 h-0.5 bg-slate-400" />
+
+                        {/* Gateway */}
+                        <div className="w-8 h-8 rotate-45 border-2 border-slate-700 bg-white flex items-center justify-center shadow-sm">
+                            <span className="-rotate-45 text-[8px] font-bold">?</span>
+                        </div>
+                         <div className="w-8 h-0.5 bg-slate-400" />
+
+                        {/* Task 2 */}
+                        <div className="w-24 h-16 rounded-lg border-2 border-slate-700 bg-white flex items-center justify-center text-[8px] font-bold shadow-sm">
+                            Interview<br/>planen
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* The AI Chat Overlay */}
+            <AnimatePresence>
+                {step >= 1 && (
+                    <motion.div 
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 20, opacity: 0 }}
+                        className="absolute bottom-6 left-1/2 -translate-x-1/2 w-3/4 bg-white/90 backdrop-blur-md rounded-xl shadow-xl border border-white/50 p-3 overflow-hidden z-20"
+                    >
+                        <div className="flex items-center gap-2 mb-2">
+                             <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-500 flex items-center justify-center text-white text-[10px]">
+                                <Workflow size={10} />
+                             </div>
+                             <span className="text-[10px] font-bold text-slate-700">Process AI Assistant</span>
+                        </div>
+                        
+                        {/* Input Area */}
+                        <div className="bg-slate-50 rounded-lg p-2 text-[10px] text-slate-600 min-h-[2.5em] flex items-center relative">
+                            {step === 1 && <span className="animate-pulse">|</span>}
+                            {step === 2 && (
+                                <Typewriter text="Erstelle einen Hiring Prozess für HR..." />
+                            )}
+                            {(step === 3 || step === 4) && (
+                                <span className="text-slate-800">Erstelle einen Hiring Prozess für HR...</span>
+                            )}
+                            
+                            {/* Loading State in Step 3 */}
+                            {step === 3 && (
+                                <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                                    <div className="w-3 h-3 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+        </div>
+    </div>
+  )
+}
+
+// --- BLOCK 9: BPMN ENGINE ---
 const StoryBPMN = () => {
   return (
     <SectionWrapper className="py-24">
        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          {/* Left Side */}
-          <div>
-             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-brand-primary text-xs font-bold uppercase tracking-wider mb-6">
-                Prozess-Transparenz
+          <div className="order-2 lg:order-1 relative h-[350px] w-full bg-white rounded-[32px] shadow-2xl border border-slate-100 overflow-hidden">
+             <BpmnAnimation />
+          </div>
+          
+          <div className="order-1 lg:order-2">
+             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-bold uppercase tracking-wider mb-6 border border-blue-100">
+                <GitCommit size={12} />
+                Workflow Engine
              </div>
              <h2 className="text-4xl font-extrabold text-slate-900 mb-6">
-                Klartext statt Spaghetti-Diagramm.
+                Prozesse, die <br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">wirklich laufen.</span>
              </h2>
              <p className="text-lg text-slate-500 mb-8 leading-relaxed font-medium">
-                Wir nutzen den Industriestandard <strong>BPMN 2.0</strong>. Damit werden komplexe Abläufe zu einer gemeinsamen Sprache für Fachabteilung und IT.
-                Visuell, verständlich und direkt ausführbar.
+                Papier-Prozesse sind geduldig. Unsere Engine macht sie lebendig. 
+                Aufgaben landen automatisch beim richtigen Bearbeiter, basierend auf dem Org-Graph.
+             </p>
+              <ul className="space-y-4">
+                <li className="flex items-start gap-3">
+                   <div className="mt-1 p-1 bg-blue-100 rounded-full text-blue-600 shrink-0"><CheckCircle2 size={14} /></div>
+                   <span className="text-slate-700 font-medium">Kein "Wer macht was?" mehr.</span>
+                </li>
+                 <li className="flex items-start gap-3">
+                   <div className="mt-1 p-1 bg-blue-100 rounded-full text-blue-600 shrink-0"><CheckCircle2 size={14} /></div>
+                   <span className="text-slate-700 font-medium">Volle Transparenz über Status und Blockaden.</span>
+                </li>
+             </ul>
+          </div>
+       </div>
+    </SectionWrapper>
+  );
+};
+
+// --- BLOCK 10: PROCESS AI ---
+const StoryProcessAI = () => {
+  return (
+    <SectionWrapper className="py-24">
+       <div className="grid lg:grid-cols-2 gap-16 items-center">
+          {/* Text Side */}
+          <div className="order-2 lg:order-1">
+             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 text-purple-600 text-xs font-bold uppercase tracking-wider mb-6">
+                <Workflow size={12} />
+                Generative Process AI
+             </div>
+             <h2 className="text-4xl font-extrabold text-slate-900 mb-6">
+                Prozesse erstellen. <br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">Einfach beschreiben.</span>
+             </h2>
+             <p className="text-lg text-slate-500 mb-8 leading-relaxed font-medium">
+                Der <strong>Process AI Assistant</strong> übersetzt Ihre Anforderungen direkt in standardisierte BPMN 2.0 Diagramme. 
+                Geben Sie ein Szenario ein, und die KI generiert die passende Prozessstruktur inklusive Gateways und Rollen.
              </p>
              <ul className="space-y-4">
                 <li className="flex items-start gap-3">
-                   <div className="mt-1 p-1 bg-blue-100 rounded-full text-brand-primary shrink-0"><CheckCircle2 size={14} /></div>
-                   <span className="text-slate-700 font-medium">Kein Interpretationsspielraum durch standardisierte Notation.</span>
+                   <div className="mt-1 p-1 bg-purple-100 rounded-full text-purple-600 shrink-0"><CheckCircle2 size={14} /></div>
+                   <span className="text-slate-700 font-medium">Intelligente Szenario-Erkennung.</span>
                 </li>
                  <li className="flex items-start gap-3">
-                   <div className="mt-1 p-1 bg-blue-100 rounded-full text-brand-primary shrink-0"><CheckCircle2 size={14} /></div>
-                   <span className="text-slate-700 font-medium">Live-Visualisierung des aktuellen Status.</span>
+                   <div className="mt-1 p-1 bg-purple-100 rounded-full text-purple-600 shrink-0"><CheckCircle2 size={14} /></div>
+                   <span className="text-slate-700 font-medium">Live-Preview und Bearbeitung im Modeler.</span>
                 </li>
              </ul>
           </div>
 
-          {/* Right Side */}
-          <div className="relative h-full min-h-[300px]">
-             <div className="glass-card p-4 rounded-3xl border border-white/60 bg-white shadow-2xl relative z-10 h-full flex items-center justify-center">
-                {/* Replaced Image with Component */}
-                <BpmnAnimation />
+          {/* Video Side (Monitor) */}
+          <div className="order-1 lg:order-2">
+             <div className="relative mx-auto w-full max-w-[500px]">
+                {/* Monitor Bezel */}
+                <div className="relative bg-slate-900 rounded-[20px] p-[10px] shadow-2xl border border-slate-700">
+                    {/* Screen Content */}
+                    <div className="relative bg-white rounded-lg overflow-hidden aspect-video border border-slate-800">
+                        {/* Simulation instead of Video */}
+                         <ProcessAiSimulation />
+                    </div>
+                    {/* Webcam dot */}
+                    <div className="absolute top-3 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-slate-800 rounded-full" />
+                </div>
+                {/* Stand */}
+                <div className="relative mx-auto w-24 h-12 bg-gradient-to-b from-slate-800 to-slate-900" style={{ clipPath: 'polygon(15% 0, 85% 0, 100% 100%, 0% 100%)' }} />
+                <div className="relative mx-auto w-40 h-1 bg-slate-800 rounded-full shadow-lg" />
              </div>
-             {/* Decor */}
-             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-brand-primary/10 blur-3xl rounded-full -z-10" />
           </div>
        </div>
     </SectionWrapper>
@@ -685,6 +862,7 @@ export const StoryFlow = () => {
        <StoryInterviewAgent />
        <StoryROI />
        <StoryBPMN />
+       <StoryProcessAI />
     </div>
   );
 };
