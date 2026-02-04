@@ -849,6 +849,65 @@ const StoryBPMN = () => {
   );
 };
 
+// --- BLOCK 11: YOUTUBE DEMO (New) ---
+const StoryYoutubeDemo = () => {
+  return (
+    <SectionWrapper className="py-24">
+       <div className="grid lg:grid-cols-2 gap-16 items-center">
+          {/* Text Side - Exact Copy */}
+          <div className="order-2 lg:order-1">
+             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 text-purple-600 text-xs font-bold uppercase tracking-wider mb-6">
+                <Workflow size={12} />
+                Generative Process AI
+             </div>
+             <h2 className="text-4xl font-extrabold text-slate-900 mb-6">
+                Prozesse erstellen. <br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">Einfach beschreiben.</span>
+             </h2>
+             <p className="text-lg text-slate-500 mb-8 leading-relaxed font-medium">
+                Der <strong>Process AI Assistant</strong> übersetzt Ihre Anforderungen direkt in standardisierte BPMN 2.0 Diagramme. 
+                Geben Sie ein Szenario ein, und die KI generiert die passende Prozessstruktur inklusive Gateways und Rollen.
+             </p>
+             <ul className="space-y-4">
+                <li className="flex items-start gap-3">
+                   <div className="mt-1 p-1 bg-purple-100 rounded-full text-purple-600 shrink-0"><CheckCircle2 size={14} /></div>
+                   <span className="text-slate-700 font-medium">Intelligente Szenario-Erkennung.</span>
+                </li>
+                 <li className="flex items-start gap-3">
+                   <div className="mt-1 p-1 bg-purple-100 rounded-full text-purple-600 shrink-0"><CheckCircle2 size={14} /></div>
+                   <span className="text-slate-700 font-medium">Live-Preview und Bearbeitung im Modeler.</span>
+                </li>
+             </ul>
+          </div>
+
+          {/* Monitor Side with YouTube */}
+          <div className="order-1 lg:order-2">
+             <div className="relative mx-auto w-full max-w-[500px]">
+                {/* Monitor Bezel */}
+                <div className="relative bg-slate-900 rounded-[20px] p-[10px] shadow-2xl border border-slate-700">
+                    {/* Screen Content */}
+                    <div className="relative bg-white rounded-lg overflow-hidden aspect-video border border-slate-800 bg-black">
+                         <iframe 
+                            className="w-full h-full object-cover"
+                            src="https://www.youtube.com/embed/iC9ma31BOB4?autoplay=1&mute=1&loop=1&playlist=iC9ma31BOB4&controls=0&modestbranding=1&rel=0&showinfo=0" 
+                            title="Process AI Demo Video" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                            allowFullScreen
+                         />
+                    </div>
+                    {/* Webcam dot */}
+                    <div className="absolute top-3 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-slate-800 rounded-full" />
+                </div>
+                {/* Stand */}
+                <div className="relative mx-auto w-24 h-12 bg-gradient-to-b from-slate-800 to-slate-900" style={{ clipPath: 'polygon(15% 0, 85% 0, 100% 100%, 0% 100%)' }} />
+                <div className="relative mx-auto w-40 h-1 bg-slate-800 rounded-full shadow-lg" />
+             </div>
+          </div>
+       </div>
+    </SectionWrapper>
+  );
+};
+
 // --- MAIN EXPORT ---
 export const StoryFlow = () => {
   return (
@@ -863,6 +922,7 @@ export const StoryFlow = () => {
        <StoryROI />
        <StoryProcessAI />
        <StoryBPMN />
+       <StoryYoutubeDemo />
     </div>
   );
 };
