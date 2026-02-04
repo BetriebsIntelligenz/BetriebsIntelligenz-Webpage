@@ -1,7 +1,7 @@
 import React from 'react';
 import { SectionWrapper } from '../components/SectionWrapper';
 import { Mic, Workflow, Rocket } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 
 const steps = [
   {
@@ -30,7 +30,7 @@ const steps = [
   }
 ];
 
-const container = {
+const container: Variants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
@@ -40,7 +40,7 @@ const container = {
   }
 };
 
-const item = {
+const item: Variants = {
   hidden: { opacity: 0, y: 50 },
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 50 } }
 };

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { SectionWrapper } from '../components/SectionWrapper';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, FileWarning, Package, Database, Users, GitCommit, Calculator, Mic, Monitor, ArrowRight, CheckCircle2, XCircle, ChevronRight, User } from 'lucide-react';
+import { Search, FileWarning, Package, Database, Users, GitCommit, Calculator, Mic, Monitor, ArrowRight, CheckCircle2, XCircle, ChevronRight, User, Workflow } from 'lucide-react';
 
 // --- BLOCK 1: HERO "Wissen, das arbeitet" ---
 const StoryHero = () => {
@@ -564,6 +564,114 @@ const StoryROI = () => {
   );
 };
 
+// --- BPMN SIMULATION COMPONENT (Replaces Broken GIF) ---
+const BpmnAnimation = () => {
+  return (
+    <div className="w-full h-full bg-slate-50 rounded-xl relative overflow-hidden flex items-center justify-center min-h-[300px] select-none shadow-inner border border-slate-100">
+       {/* Grid Background */}
+       <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40" />
+
+       {/* Diagram Container */}
+       <div className="relative z-10 flex items-center w-full max-w-lg justify-between px-8">
+          
+          {/* Connection Lines (Background) */}
+          <div className="absolute top-1/2 left-0 w-full h-0.5 bg-slate-300 -translate-y-1/2 z-0" />
+
+          {/* Start Event */}
+          <div className="relative z-10 w-12 h-12 rounded-full bg-white border-2 border-slate-600 flex items-center justify-center shadow-sm">
+             <div className="w-8 h-8 rounded-full border border-slate-200" />
+          </div>
+
+          {/* Task Node */}
+          <div className="relative z-10 w-32 h-20 bg-white border-2 border-slate-600 rounded-lg shadow-sm flex flex-col items-center justify-center gap-1">
+             <Users size={16} className="text-slate-500" />
+             <span className="text-xs font-bold text-slate-700">Approval</span>
+             <motion.div 
+               className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"
+               animate={{ scale: [0, 1, 0] }}
+               transition={{ duration: 4, times: [0.4, 0.45, 0.9], repeat: Infinity }}
+             />
+          </div>
+
+          {/* Gateway */}
+          <div className="relative z-10 w-12 h-12 bg-white border-2 border-slate-600 transform rotate-45 flex items-center justify-center shadow-sm">
+             <span className="transform -rotate-45 text-slate-600 font-bold">?</span>
+          </div>
+
+          {/* End Event */}
+          <div className="relative z-10 w-12 h-12 rounded-full bg-white border-4 border-slate-600 shadow-sm" />
+       </div>
+
+       {/* Moving Token Animation */}
+       <motion.div
+         className="absolute top-1/2 w-4 h-4 bg-brand-primary rounded-full shadow-[0_0_10px_rgba(0,122,255,0.6)] z-20"
+         initial={{ left: "15%", opacity: 0 }}
+         animate={{ 
+            left: ["15%", "40%", "40%", "60%", "60%", "85%"],
+            opacity: [0, 1, 1, 1, 1, 0]
+         }}
+         transition={{
+            duration: 3,
+            ease: "easeInOut",
+            times: [0, 0.2, 0.4, 0.5, 0.7, 1],
+            repeat: Infinity,
+            repeatDelay: 0.5
+         }}
+         style={{ translateY: "-50%" }}
+       />
+       
+       {/* Overlay Label */}
+       <div className="absolute top-4 left-4 px-3 py-1 bg-white/80 backdrop-blur border border-slate-200 rounded-full text-[10px] font-mono font-bold text-slate-500 flex items-center gap-2">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+          Live Simulation
+       </div>
+    </div>
+  );
+};
+
+// --- BLOCK 9: BPMN Feature ---
+const StoryBPMN = () => {
+  return (
+    <SectionWrapper className="py-24">
+       <div className="grid lg:grid-cols-2 gap-16 items-center">
+          {/* Left Side */}
+          <div>
+             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-brand-primary text-xs font-bold uppercase tracking-wider mb-6">
+                Prozess-Transparenz
+             </div>
+             <h2 className="text-4xl font-extrabold text-slate-900 mb-6">
+                Klartext statt Spaghetti-Diagramm.
+             </h2>
+             <p className="text-lg text-slate-500 mb-8 leading-relaxed font-medium">
+                Wir nutzen den Industriestandard <strong>BPMN 2.0</strong>. Damit werden komplexe Abläufe zu einer gemeinsamen Sprache für Fachabteilung und IT.
+                Visuell, verständlich und direkt ausführbar.
+             </p>
+             <ul className="space-y-4">
+                <li className="flex items-start gap-3">
+                   <div className="mt-1 p-1 bg-blue-100 rounded-full text-brand-primary shrink-0"><CheckCircle2 size={14} /></div>
+                   <span className="text-slate-700 font-medium">Kein Interpretationsspielraum durch standardisierte Notation.</span>
+                </li>
+                 <li className="flex items-start gap-3">
+                   <div className="mt-1 p-1 bg-blue-100 rounded-full text-brand-primary shrink-0"><CheckCircle2 size={14} /></div>
+                   <span className="text-slate-700 font-medium">Live-Visualisierung des aktuellen Status.</span>
+                </li>
+             </ul>
+          </div>
+
+          {/* Right Side */}
+          <div className="relative h-full min-h-[300px]">
+             <div className="glass-card p-4 rounded-3xl border border-white/60 bg-white shadow-2xl relative z-10 h-full flex items-center justify-center">
+                {/* Replaced Image with Component */}
+                <BpmnAnimation />
+             </div>
+             {/* Decor */}
+             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-brand-primary/10 blur-3xl rounded-full -z-10" />
+          </div>
+       </div>
+    </SectionWrapper>
+  );
+};
+
 // --- MAIN EXPORT ---
 export const StoryFlow = () => {
   return (
@@ -576,6 +684,7 @@ export const StoryFlow = () => {
        <StoryDecisionEngine />
        <StoryInterviewAgent />
        <StoryROI />
+       <StoryBPMN />
     </div>
   );
 };
