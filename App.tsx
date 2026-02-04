@@ -13,12 +13,14 @@ import { StoryFlow } from './sections/StoryFlow';
 import { Footer } from './components/Footer';
 import { Logo } from './components/Logo';
 import { VoiceAgentChat } from './components/VoiceAgentChat';
+import { BlogOverlay } from './components/BlogOverlay';
 import { AnimatePresence, motion, useScroll, useSpring, useTransform } from 'framer-motion';
 import { Menu, X, Calendar } from 'lucide-react';
 
 const App: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showBlog, setShowBlog] = useState(false);
   
   // Scroll hooks
   const { scrollYProgress } = useScroll();
@@ -140,7 +142,10 @@ const App: React.FC = () => {
             <button className="hidden md:flex items-center justify-center w-10 h-10 rounded-full text-slate-600 hover:text-slate-900 hover:bg-black/5 transition-all" aria-label="Termin">
               <Calendar size={20} />
             </button>
-            <button className="hidden md:flex px-4 py-2 rounded-full text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-black/5 transition-all">
+            <button 
+              onClick={() => setShowBlog(true)}
+              className="hidden md:flex px-4 py-2 rounded-full text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-black/5 transition-all"
+            >
               Blog
             </button>
             <button className="hidden md:flex px-4 py-2 rounded-full text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-black/5 transition-all">
@@ -179,7 +184,7 @@ const App: React.FC = () => {
                   <motion.a whileTap={{ scale: 0.95 }} href="#process" onClick={() => setMobileMenuOpen(false)}>Prozess</motion.a>
                   <motion.a whileTap={{ scale: 0.95 }} href="#benefits" onClick={() => setMobileMenuOpen(false)}>ROI</motion.a>
                   <motion.a whileTap={{ scale: 0.95 }} href="#pricing" onClick={() => setMobileMenuOpen(false)}>Preise</motion.a>
-                  <motion.button whileTap={{ scale: 0.95 }} className="text-left" onClick={() => setMobileMenuOpen(false)}>Blog</motion.button>
+                  <motion.button whileTap={{ scale: 0.95 }} className="text-left" onClick={() => { setMobileMenuOpen(false); setShowBlog(true); }}>Blog</motion.button>
                   <motion.button whileTap={{ scale: 0.95 }} className="text-left" onClick={() => setMobileMenuOpen(false)}>Konfigurator</motion.button>
                 </nav>
              </div>
@@ -207,6 +212,9 @@ const App: React.FC = () => {
       
       {/* --- Voice AI Agent --- */}
       <VoiceAgentChat />
+
+      {/* --- Blog Overlay --- */}
+      <BlogOverlay isOpen={showBlog} onClose={() => setShowBlog(false)} />
 
     </div>
   );
