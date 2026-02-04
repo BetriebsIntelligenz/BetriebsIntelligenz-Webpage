@@ -14,7 +14,7 @@ import { Footer } from './components/Footer';
 import { Logo } from './components/Logo';
 import { VoiceAgentChat } from './components/VoiceAgentChat';
 import { AnimatePresence, motion, useScroll, useSpring, useTransform } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Calendar } from 'lucide-react';
 
 const App: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -136,9 +136,18 @@ const App: React.FC = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-3 shrink-0 z-20">
-            <button className="hidden md:flex px-5 py-2.5 rounded-full text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-black/5 transition-all">
-              Login
+            {/* New Nav Items - Reordered (Left to Right: Calendar, Blog, Konfigurator, Demo) */}
+            <button className="hidden md:flex items-center justify-center w-10 h-10 rounded-full text-slate-600 hover:text-slate-900 hover:bg-black/5 transition-all" aria-label="Termin">
+              <Calendar size={20} />
             </button>
+            <button className="hidden md:flex px-4 py-2 rounded-full text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-black/5 transition-all">
+              Blog
+            </button>
+            <button className="hidden md:flex px-4 py-2 rounded-full text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-black/5 transition-all">
+              Konfigurator
+            </button>
+
+            {/* Primary Action */}
             <button className="px-6 py-2.5 rounded-full bg-slate-900 text-white font-semibold text-sm hover:scale-105 hover:shadow-lg transition-all active:scale-95">
               Demo buchen
             </button>
@@ -170,6 +179,8 @@ const App: React.FC = () => {
                   <motion.a whileTap={{ scale: 0.95 }} href="#process" onClick={() => setMobileMenuOpen(false)}>Prozess</motion.a>
                   <motion.a whileTap={{ scale: 0.95 }} href="#benefits" onClick={() => setMobileMenuOpen(false)}>ROI</motion.a>
                   <motion.a whileTap={{ scale: 0.95 }} href="#pricing" onClick={() => setMobileMenuOpen(false)}>Preise</motion.a>
+                  <motion.button whileTap={{ scale: 0.95 }} className="text-left" onClick={() => setMobileMenuOpen(false)}>Blog</motion.button>
+                  <motion.button whileTap={{ scale: 0.95 }} className="text-left" onClick={() => setMobileMenuOpen(false)}>Konfigurator</motion.button>
                 </nav>
              </div>
           </motion.div>
