@@ -4,6 +4,9 @@ import { Mic, X, Send, Play, Square, RotateCcw, Pause, Sparkles, AudioLines, Loa
 import { GoogleGenAI } from "@google/genai";
 import ReactMarkdown from 'react-markdown';
 
+// --- Configuration ---
+const N8N_WEBHOOK_URL = "https://n8n.srv1089373.hstgr.cloud/webhook/92b6a763-0d59-4cd2-b533-c85dd5227496";
+
 // --- Types ---
 type Message = {
   id: string;
@@ -42,7 +45,7 @@ export const VoiceAgentChat: React.FC = () => {
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<number | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
-  // Ref for the scrollable container instead of a dummy div
+  // Ref for the scrollable container
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // --- Effects ---
@@ -138,7 +141,7 @@ export const VoiceAgentChat: React.FC = () => {
       }
   };
 
-  // --- Gemini Logic ---
+  // --- Gemini Helper ---
   const blobToBase64 = (blob: Blob): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -152,30 +155,24 @@ export const VoiceAgentChat: React.FC = () => {
     });
   };
 
+  // --- SEND LOGIC (N8N INTEGRATION) ---
   const handleSend = async () => {
+    // Basic check for Voice Transcribing Key (Local)
     if (!process.env.API_KEY) {
-        alert("API Key fehlt.");
+        alert("API Key für Transkription fehlt.");
         return;
     }
 
     const hasAudio = recState === 'review' && audioBlob;
     if (!inputValue && !hasAudio) return;
 
-    // Optimistic UI for text
-    if (!hasAudio) {
-        setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', text: inputValue }]);
-        setInputValue('');
-        setProcStage('thinking');
-    } else {
-        setProcStage('transcribing');
-    }
+    let messageToSend = inputValue;
 
-    try {
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-        let userPrompt = inputValue;
-        
-        // 1. Handle Audio (Transcribe first)
-        if (hasAudio && audioBlob) {
+    // 1. Handle Audio (Local Transcribe first via Gemini Client)
+    if (hasAudio && audioBlob) {
+        setProcStage('transcribing');
+        try {
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
             const base64Audio = await blobToBase64(audioBlob);
             
             const transcriptionResponse = await ai.models.generateContent({
@@ -189,9 +186,8 @@ export const VoiceAgentChat: React.FC = () => {
             });
 
             const transcriptText = transcriptionResponse.text || "(Keine Sprache erkannt)";
-            userPrompt = transcriptText;
+            messageToSend = transcriptText;
 
-            // Add transcript as user message
             setMessages(prev => [...prev, { 
                 id: Date.now().toString(), 
                 role: 'user', 
@@ -199,28 +195,117 @@ export const VoiceAgentChat: React.FC = () => {
                 isAudioTranscript: true
             }]);
             
-            discardRecording(); // Clear audio UI
-            setProcStage('thinking'); // Move to thinking stage
+            discardRecording(); 
+        } catch (error) {
+            console.error("Transcription Error:", error);
+            setMessages(prev => [...prev, { 
+                id: Date.now().toString(), 
+                role: 'assistant', 
+                text: "Fehler bei der Audio-Transkription."
+            }]);
+            setProcStage('idle');
+            return;
+        }
+    } else {
+        // Text Message
+        setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', text: inputValue }]);
+        setInputValue('');
+    }
+
+    // 2. Send to N8N Webhook
+    setProcStage('thinking');
+    
+    try {
+        const payload = {
+            message: messageToSend,
+            email: email, 
+            timestamp: new Date().toISOString(),
+        };
+
+        const response = await fetch(N8N_WEBHOOK_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text().catch(() => "");
+            if (errorText.includes("Unused Respond to Webhook node")) {
+                throw new Error("N8N_CONFIG_ERROR");
+            }
+            console.error(`N8N Response Error (${response.status}):`, errorText);
+            throw new Error(`Server Error: ${response.status}`);
         }
 
-        // 2. Get AI Response
-        const replyResponse = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: `Du bist ein hilfreicher Assistent für eine Firmen-Wissensdatenbank. Antworte mit gut strukturiertem Markdown (Nutze Fettungen, Listen und Absätze wo sinnvoll). Antworte auf: "${userPrompt}"`
-        });
+        const textData = await response.text();
+        if (!textData) throw new Error("EMPTY_RESPONSE");
         
+        let data;
+        try {
+            data = JSON.parse(textData);
+        } catch (e) {
+             console.error("JSON Parse Error. Raw text:", textData);
+             throw new Error("INVALID_JSON");
+        }
+        
+        // --- SMARTER PARSING LOGIC ---
+        let aiResponseText = "";
+
+        // 1. Check for standard flat keys (Best Practice)
+        if (data.text) aiResponseText = data.text;
+        else if (data.output) aiResponseText = data.output;
+        else if (data.message) aiResponseText = data.message;
+        
+        // 2. Check for raw N8N Array structure (Common when using "All Incoming Items")
+        else if (Array.isArray(data) && data.length > 0) {
+            const firstItem = data[0];
+            // Check deep nested Google Gemini structure: content.parts[0].text
+            if (firstItem?.content?.parts?.[0]?.text) {
+                aiResponseText = firstItem.content.parts[0].text;
+            } else if (firstItem?.text) {
+                aiResponseText = firstItem.text;
+            } else if (firstItem?.output) {
+                aiResponseText = firstItem.output;
+            }
+        }
+        
+        // 3. Check for raw Object structure (Single Item output)
+        else if (data?.content?.parts?.[0]?.text) {
+            aiResponseText = data.content.parts[0].text;
+        }
+
+        if (!aiResponseText) {
+            console.warn("Unrecognized JSON structure:", data);
+            aiResponseText = "Antwort erhalten, aber das Format konnte nicht gelesen werden. (Siehe Console)";
+        }
+
         setMessages(prev => [...prev, { 
             id: (Date.now() + 1).toString(), 
             role: 'assistant', 
-            text: replyResponse.text || "Ich konnte das leider nicht verarbeiten."
+            text: aiResponseText
         }]);
 
-    } catch (error) {
-        console.error("Gemini Error:", error);
+    } catch (error: any) {
+        console.error("Connection Error:", error);
+        
+        let errorMessage = "Ich konnte das System nicht erreichen.";
+        
+        if (error.message === "N8N_CONFIG_ERROR") {
+             errorMessage = "⚠️ Konfigurationsfehler im n8n: Der 'Webhook Node' ist nicht auf 'Using Respond to Webhook Node' eingestellt.";
+        } else if (error.message === "EMPTY_RESPONSE" || error.message === "INVALID_JSON") {
+             errorMessage = "⚠️ Antwortfehler: Der Server hat kein gültiges JSON zurückgesendet. Fehlt der 'Respond to Webhook' Node?";
+        } else if (error.message.includes('Failed to fetch')) {
+            errorMessage = "⚠️ Verbindungsfehler (Netzwerk/CORS). Der Server blockiert die Anfrage oder ist offline.";
+        } else if (error.message.includes('Server Error: 500')) {
+            errorMessage = "⚠️ Serverfehler (500). Der Workflow ist abgestürzt.";
+        }
+
         setMessages(prev => [...prev, { 
             id: Date.now().toString(), 
             role: 'assistant', 
-            text: "Verbindungsfehler zum AI Gehirn."
+            text: errorMessage
         }]);
     } finally {
         setProcStage('idle');
@@ -300,7 +385,7 @@ export const VoiceAgentChat: React.FC = () => {
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                                     <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                                   </span>
-                                  Ready to listen
+                                  Ready to listen (n8n connected)
                                 </>
                               ) : (
                                 <span className="text-white/60">Authentication required</span>
@@ -454,7 +539,7 @@ export const VoiceAgentChat: React.FC = () => {
                           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
                               <div className="bg-white border border-white/50 backdrop-blur-md p-3 rounded-2xl rounded-bl-sm flex items-center gap-2 text-slate-600">
                                   <Loader2 size={16} className="animate-spin text-blue-600" />
-                                  <span className="text-xs font-medium">AI is thinking...</span>
+                                  <span className="text-xs font-medium">Assistant is thinking...</span>
                               </div>
                           </motion.div>
                       )}
