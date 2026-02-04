@@ -504,7 +504,7 @@ const StoryROI = () => {
   const savings = hires * 6800; // Mock factor
 
   return (
-    <SectionWrapper className="py-24 mb-24">
+    <SectionWrapper className="py-24">
        <div className="glass-card p-8 md:p-12 rounded-[40px] bg-gradient-to-br from-white to-blue-50 border border-brand-primary/20 text-center relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-green-200/20 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
           
@@ -564,7 +564,7 @@ const StoryROI = () => {
   );
 };
 
-// --- BPMN SIMULATION COMPONENT (Replaces Broken GIF) ---
+// --- HELPER: BPMN ANIMATION ---
 const BpmnAnimation = () => {
   return (
     <div className="w-full h-full bg-slate-50 rounded-xl relative overflow-hidden flex items-center justify-center min-h-[300px] select-none shadow-inner border border-slate-100">
@@ -629,7 +629,7 @@ const BpmnAnimation = () => {
   );
 };
 
-// --- PROCESS AI SIMULATION COMPONENT (New) ---
+// --- HELPER: PROCESS AI SIMULATION ---
 const Typewriter = ({ text }: { text: string }) => {
     const [displayed, setDisplayed] = useState('');
     
@@ -757,45 +757,7 @@ const ProcessAiSimulation = () => {
   )
 }
 
-// --- BLOCK 9: BPMN ENGINE ---
-const StoryBPMN = () => {
-  return (
-    <SectionWrapper className="py-24">
-       <div className="grid lg:grid-cols-2 gap-16 items-center">
-          <div className="order-2 lg:order-1 relative h-[350px] w-full bg-white rounded-[32px] shadow-2xl border border-slate-100 overflow-hidden">
-             <BpmnAnimation />
-          </div>
-          
-          <div className="order-1 lg:order-2">
-             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-bold uppercase tracking-wider mb-6 border border-blue-100">
-                <GitCommit size={12} />
-                Workflow Engine
-             </div>
-             <h2 className="text-4xl font-extrabold text-slate-900 mb-6">
-                Prozesse, die <br/>
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">wirklich laufen.</span>
-             </h2>
-             <p className="text-lg text-slate-500 mb-8 leading-relaxed font-medium">
-                Papier-Prozesse sind geduldig. Unsere Engine macht sie lebendig. 
-                Aufgaben landen automatisch beim richtigen Bearbeiter, basierend auf dem Org-Graph.
-             </p>
-              <ul className="space-y-4">
-                <li className="flex items-start gap-3">
-                   <div className="mt-1 p-1 bg-blue-100 rounded-full text-blue-600 shrink-0"><CheckCircle2 size={14} /></div>
-                   <span className="text-slate-700 font-medium">Kein "Wer macht was?" mehr.</span>
-                </li>
-                 <li className="flex items-start gap-3">
-                   <div className="mt-1 p-1 bg-blue-100 rounded-full text-blue-600 shrink-0"><CheckCircle2 size={14} /></div>
-                   <span className="text-slate-700 font-medium">Volle Transparenz über Status und Blockaden.</span>
-                </li>
-             </ul>
-          </div>
-       </div>
-    </SectionWrapper>
-  );
-};
-
-// --- BLOCK 10: PROCESS AI ---
+// --- BLOCK 9: PROCESS AI (Now Block 9) ---
 const StoryProcessAI = () => {
   return (
     <SectionWrapper className="py-24">
@@ -849,6 +811,44 @@ const StoryProcessAI = () => {
   );
 };
 
+// --- BLOCK 10: BPMN ENGINE (Now Block 10) ---
+const StoryBPMN = () => {
+  return (
+    <SectionWrapper className="py-24">
+       <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="order-2 lg:order-1 relative h-[350px] w-full bg-white rounded-[32px] shadow-2xl border border-slate-100 overflow-hidden">
+             <BpmnAnimation />
+          </div>
+          
+          <div className="order-1 lg:order-2">
+             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-bold uppercase tracking-wider mb-6 border border-blue-100">
+                <GitCommit size={12} />
+                Workflow Engine
+             </div>
+             <h2 className="text-4xl font-extrabold text-slate-900 mb-6">
+                Prozesse, die <br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">wirklich laufen.</span>
+             </h2>
+             <p className="text-lg text-slate-500 mb-8 leading-relaxed font-medium">
+                Papier-Prozesse sind geduldig. Unsere Engine macht sie lebendig. 
+                Aufgaben landen automatisch beim richtigen Bearbeiter, basierend auf dem Org-Graph.
+             </p>
+              <ul className="space-y-4">
+                <li className="flex items-start gap-3">
+                   <div className="mt-1 p-1 bg-blue-100 rounded-full text-blue-600 shrink-0"><CheckCircle2 size={14} /></div>
+                   <span className="text-slate-700 font-medium">Kein "Wer macht was?" mehr.</span>
+                </li>
+                 <li className="flex items-start gap-3">
+                   <div className="mt-1 p-1 bg-blue-100 rounded-full text-blue-600 shrink-0"><CheckCircle2 size={14} /></div>
+                   <span className="text-slate-700 font-medium">Volle Transparenz über Status und Blockaden.</span>
+                </li>
+             </ul>
+          </div>
+       </div>
+    </SectionWrapper>
+  );
+};
+
 // --- MAIN EXPORT ---
 export const StoryFlow = () => {
   return (
@@ -861,8 +861,8 @@ export const StoryFlow = () => {
        <StoryDecisionEngine />
        <StoryInterviewAgent />
        <StoryROI />
-       <StoryBPMN />
        <StoryProcessAI />
+       <StoryBPMN />
     </div>
   );
 };
