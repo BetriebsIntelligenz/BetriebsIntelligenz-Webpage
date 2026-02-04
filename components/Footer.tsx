@@ -1,4 +1,5 @@
 import React from 'react';
+import { Logo } from './Logo';
 
 export const Footer: React.FC = () => {
   return (
@@ -7,7 +8,7 @@ export const Footer: React.FC = () => {
           <div className="grid md:grid-cols-4 gap-12 mb-12">
              <div className="col-span-2">
                 <div className="flex items-center gap-2 mb-4">
-                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center text-white font-bold text-sm shadow-md">B</div>
+                   <Logo className="w-10 h-10 text-brand-primary" />
                    <span className="font-bold text-slate-900">BetriebsIntelligenz</span>
                 </div>
                 <p className="text-slate-500 text-sm max-w-sm font-medium">

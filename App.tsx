@@ -9,7 +9,9 @@ import { DeepDiveDMN } from './sections/DeepDiveDMN';
 import { Benefits } from './sections/Benefits';
 import { Pricing } from './sections/Pricing';
 import { FAQ } from './sections/FAQ';
+import { StoryFlow } from './sections/StoryFlow';
 import { Footer } from './components/Footer';
+import { Logo } from './components/Logo';
 import { AnimatePresence, motion, useScroll, useSpring, useTransform } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 
@@ -120,9 +122,7 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 md:px-6 flex items-center justify-between gap-6">
           {/* Logo */}
           <div className="flex items-center gap-2 cursor-pointer z-20 shrink-0" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center text-white font-bold shadow-lg shadow-brand-primary/20">
-              B
-            </div>
+            <Logo className="w-10 h-10 text-brand-primary" />
             <span className={`font-bold text-xl tracking-tight hidden md:block transition-colors ${scrolled ? 'text-slate-800' : 'text-slate-900'}`}>
               BetriebsIntelligenz
             </span>
@@ -185,6 +185,10 @@ const App: React.FC = () => {
         <Benefits />
         <Pricing />
         <FAQ />
+        
+        {/* --- NEW STORY FLOW SECTION --- */}
+        <StoryFlow />
+        
       </main>
 
       <Footer />
