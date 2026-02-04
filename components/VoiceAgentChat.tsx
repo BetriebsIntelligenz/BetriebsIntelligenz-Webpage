@@ -42,16 +42,17 @@ export const VoiceAgentChat: React.FC = () => {
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<number | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Ref for the scrollable container instead of a dummy div
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // --- Effects ---
   useEffect(() => {
-    // Only scroll to bottom if we have more than the initial greeting, 
-    // prevents jumping on initial load.
-    if (isOpen && hasAccess && messages.length > 1) {
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+    // Robust scrolling logic: set scrollTop to scrollHeight
+    if (isOpen && hasAccess && scrollContainerRef.current) {
+        const scrollContainer = scrollContainerRef.current;
+        setTimeout(() => {
+            scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        }, 100);
     }
   }, [messages.length, isOpen, hasAccess, procStage]);
 
@@ -277,7 +278,7 @@ export const VoiceAgentChat: React.FC = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="relative w-full max-w-lg h-[700px] max-h-[90vh] bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 rounded-[40px] shadow-2xl flex flex-col overflow-hidden border border-white/20 text-white"
+              className="relative w-full max-w-2xl h-[700px] max-h-[90vh] bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 rounded-[40px] shadow-2xl flex flex-col overflow-hidden border border-white/20 text-white"
             >
               
               {/* Decorative Glows */}
@@ -389,9 +390,12 @@ export const VoiceAgentChat: React.FC = () => {
                 </div>
               ) : (
                 // --- CHAT INTERFACE ---
-                <div className="flex flex-col h-full overflow-hidden">
-                  {/* Message List: Flex-1 takes remaining space */}
-                  <div className="flex-1 overflow-y-auto px-6 pt-10 pb-4 space-y-6 scroll-smooth">
+                <div className="flex flex-col h-full w-full overflow-hidden">
+                  {/* Message List: Flex-1 takes available space */}
+                  <div 
+                      ref={scrollContainerRef}
+                      className="flex-1 overflow-y-auto px-6 pt-10 pb-4 space-y-6 scroll-smooth"
+                  >
                       {messages.map((msg) => (
                           <motion.div
                               key={msg.id}
@@ -402,19 +406,23 @@ export const VoiceAgentChat: React.FC = () => {
                               <div 
                                   className={`max-w-[85%] p-4 rounded-2xl text-base leading-relaxed shadow-lg backdrop-blur-sm ${
                                       msg.role === 'user' 
-                                          ? 'bg-white text-blue-900 rounded-br-sm' 
-                                          : 'bg-white/10 border border-white/10 text-white rounded-bl-sm'
+                                          ? 'bg-blue-600 text-white rounded-br-sm' 
+                                          : 'bg-white text-slate-800 rounded-bl-sm'
                                   }`}
                               >
                                   {msg.isAudioTranscript && (
-                                      <div className="flex items-center gap-1.5 text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full w-fit mb-2 font-bold uppercase tracking-wider">
+                                      <div className={`flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-full w-fit mb-2 font-bold uppercase tracking-wider ${
+                                          msg.role === 'user' ? 'bg-white/20 text-white' : 'bg-blue-50 text-blue-600'
+                                      }`}>
                                           <Mic size={10} /> Voice Transcript
                                       </div>
                                   )}
                                   
                                   {/* Markdown Rendering */}
                                   <div className={`prose prose-p:my-1 prose-ul:my-1 prose-li:my-0 prose-headings:mb-2 prose-headings:mt-4 prose-headings:text-base prose-strong:font-bold max-w-none ${
-                                    msg.role === 'user' ? 'prose-blue' : 'prose-invert prose-headings:text-white prose-strong:text-white'
+                                    msg.role === 'user' 
+                                        ? 'prose-invert prose-p:text-white prose-headings:text-white' 
+                                        : 'prose-slate prose-p:text-slate-700 prose-headings:text-slate-900'
                                   }`}>
                                     <ReactMarkdown>{msg.text}</ReactMarkdown>
                                   </div>
@@ -425,7 +433,7 @@ export const VoiceAgentChat: React.FC = () => {
                       {/* --- Animation: Transcribing --- */}
                       {procStage === 'transcribing' && (
                           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-end">
-                              <div className="bg-white/20 border border-white/20 backdrop-blur-md p-4 rounded-2xl rounded-br-sm text-white flex items-center gap-3">
+                              <div className="bg-blue-600 border border-blue-500 backdrop-blur-md p-4 rounded-2xl rounded-br-sm text-white flex items-center gap-3">
                                   <div className="flex gap-1 h-4 items-center">
                                       {[1,2,3,4,5].map(i => (
                                           <motion.div 
@@ -444,110 +452,113 @@ export const VoiceAgentChat: React.FC = () => {
                       {/* --- Animation: Thinking --- */}
                       {procStage === 'thinking' && (
                           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
-                              <div className="bg-white/10 border border-white/10 backdrop-blur-md p-3 rounded-2xl rounded-bl-sm flex items-center gap-2 text-white/80">
-                                  <Loader2 size={16} className="animate-spin" />
+                              <div className="bg-white border border-white/50 backdrop-blur-md p-3 rounded-2xl rounded-bl-sm flex items-center gap-2 text-slate-600">
+                                  <Loader2 size={16} className="animate-spin text-blue-600" />
                                   <span className="text-xs font-medium">AI is thinking...</span>
                               </div>
                           </motion.div>
                       )}
-
-                      <div ref={messagesEndRef} />
                   </div>
 
-                  {/* Input Area: Shrink-0 stays at bottom, with padding from bottom edge */}
+                  {/* Input Area: Shrink-0 stays at bottom */}
                   <div className="px-4 pb-6 pt-2 shrink-0 z-20">
-                      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-2 shadow-xl">
+                      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-2 shadow-xl relative">
+                          {/* Darker overlay for better contrast since we are on gradient */}
+                          <div className="absolute inset-0 bg-black/10 rounded-3xl pointer-events-none" /> 
                           
-                          {/* Audio Player UI inside Input */}
-                          <AnimatePresence>
-                            {(recState !== 'idle') && (
-                                <motion.div 
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: 'auto', opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
-                                    className="mb-2 bg-black/20 rounded-2xl overflow-hidden"
+                          {/* Content wrapper to be above overlay */}
+                          <div className="relative z-10">
+                            {/* Audio Player UI inside Input */}
+                            <AnimatePresence>
+                                {(recState !== 'idle') && (
+                                    <motion.div 
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        className="mb-2 bg-black/20 rounded-2xl overflow-hidden"
+                                    >
+                                        <div className="p-4 flex flex-col items-center">
+                                            {recState === 'review' ? (
+                                                <div className="w-full flex items-center justify-between">
+                                                    <audio ref={audioPlayerRef} onEnded={() => setIsPlayingPreview(false)} className="hidden" />
+                                                    <button onClick={togglePreviewPlay} className="w-10 h-10 rounded-full bg-white text-blue-600 flex items-center justify-center hover:scale-105 transition-transform">
+                                                        {isPlayingPreview ? <Pause size={18} /> : <Play size={18} className="ml-1" />}
+                                                    </button>
+                                                    <div className="flex-1 mx-4 h-1 bg-white/20 rounded-full overflow-hidden">
+                                                        <div className="h-full bg-green-400 w-full" />
+                                                    </div>
+                                                    <button onClick={discardRecording} className="p-2 text-white/50 hover:text-red-400 transition-colors">
+                                                        <RotateCcw size={18} />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="w-full flex flex-col items-center">
+                                                    <div className="font-mono text-2xl font-bold text-white mb-2 tracking-widest">
+                                                        {formatTime(recordingTime)}
+                                                    </div>
+                                                    <div className="flex items-center gap-1 h-8 mb-4">
+                                                        {[...Array(12)].map((_, i) => (
+                                                            <motion.div 
+                                                                key={i}
+                                                                animate={recState === 'recording' ? { height: [10, Math.random() * 32 + 8, 10] } : { height: 4 }}
+                                                                transition={{ duration: 0.4, repeat: Infinity, delay: i * 0.05 }}
+                                                                className="w-1.5 bg-red-500 rounded-full"
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                    <div className="flex gap-4">
+                                                        <button onClick={recState === 'recording' ? pauseRecording : resumeRecording} className="p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
+                                                            {recState === 'recording' ? <Pause size={20} /> : <Mic size={20} />}
+                                                        </button>
+                                                        <button onClick={stopRecording} className="p-3 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-lg transition-colors">
+                                                            <Square size={20} fill="currentColor" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            <div className="flex items-end gap-2">
+                                <div className="flex-1 relative">
+                                    <textarea 
+                                        value={inputValue}
+                                        onChange={(e) => setInputValue(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                handleSend();
+                                            }
+                                        }}
+                                        placeholder={recState === 'review' ? "Notiz zur Aufnahme..." : "Nachricht eingeben..."}
+                                        className="w-full bg-transparent text-white placeholder:text-white/40 border-none outline-none px-4 py-3 text-sm resize-none max-h-[100px]"
+                                        rows={1}
+                                    />
+                                </div>
+
+                                {recState === 'idle' && (
+                                    <button 
+                                        onClick={startRecording}
+                                        className="p-3 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                                    >
+                                        <AudioLines size={22} />
+                                    </button>
+                                )}
+
+                                <button 
+                                    onClick={handleSend}
+                                    disabled={(procStage !== 'idle') || (!inputValue && recState !== 'review')}
+                                    className={`p-3 rounded-xl transition-all ${
+                                        (inputValue || recState === 'review') 
+                                            ? 'bg-white text-blue-600 hover:scale-105 shadow-lg' 
+                                            : 'bg-white/10 text-white/30 cursor-not-allowed'
+                                    }`}
                                 >
-                                    <div className="p-4 flex flex-col items-center">
-                                        {recState === 'review' ? (
-                                            <div className="w-full flex items-center justify-between">
-                                                <audio ref={audioPlayerRef} onEnded={() => setIsPlayingPreview(false)} className="hidden" />
-                                                <button onClick={togglePreviewPlay} className="w-10 h-10 rounded-full bg-white text-blue-600 flex items-center justify-center hover:scale-105 transition-transform">
-                                                    {isPlayingPreview ? <Pause size={18} /> : <Play size={18} className="ml-1" />}
-                                                </button>
-                                                <div className="flex-1 mx-4 h-1 bg-white/20 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-green-400 w-full" />
-                                                </div>
-                                                <button onClick={discardRecording} className="p-2 text-white/50 hover:text-red-400 transition-colors">
-                                                    <RotateCcw size={18} />
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <div className="w-full flex flex-col items-center">
-                                                <div className="font-mono text-2xl font-bold text-white mb-2 tracking-widest">
-                                                    {formatTime(recordingTime)}
-                                                </div>
-                                                <div className="flex items-center gap-1 h-8 mb-4">
-                                                    {[...Array(12)].map((_, i) => (
-                                                        <motion.div 
-                                                            key={i}
-                                                            animate={recState === 'recording' ? { height: [10, Math.random() * 32 + 8, 10] } : { height: 4 }}
-                                                            transition={{ duration: 0.4, repeat: Infinity, delay: i * 0.05 }}
-                                                            className="w-1.5 bg-red-500 rounded-full"
-                                                        />
-                                                    ))}
-                                                </div>
-                                                <div className="flex gap-4">
-                                                    <button onClick={recState === 'recording' ? pauseRecording : resumeRecording} className="p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
-                                                        {recState === 'recording' ? <Pause size={20} /> : <Mic size={20} />}
-                                                    </button>
-                                                    <button onClick={stopRecording} className="p-3 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-lg transition-colors">
-                                                        <Square size={20} fill="currentColor" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </motion.div>
-                            )}
-                          </AnimatePresence>
-
-                          <div className="flex items-end gap-2">
-                              <div className="flex-1 relative">
-                                  <textarea 
-                                      value={inputValue}
-                                      onChange={(e) => setInputValue(e.target.value)}
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && !e.shiftKey) {
-                                            e.preventDefault();
-                                            handleSend();
-                                        }
-                                      }}
-                                      placeholder={recState === 'review' ? "Notiz zur Aufnahme..." : "Nachricht eingeben..."}
-                                      className="w-full bg-transparent text-white placeholder:text-white/40 border-none outline-none px-4 py-3 text-sm resize-none max-h-[100px]"
-                                      rows={1}
-                                  />
-                              </div>
-
-                              {recState === 'idle' && (
-                                  <button 
-                                      onClick={startRecording}
-                                      className="p-3 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-                                  >
-                                      <AudioLines size={22} />
-                                  </button>
-                              )}
-
-                              <button 
-                                  onClick={handleSend}
-                                  disabled={(procStage !== 'idle') || (!inputValue && recState !== 'review')}
-                                  className={`p-3 rounded-xl transition-all ${
-                                      (inputValue || recState === 'review') 
-                                        ? 'bg-white text-blue-600 hover:scale-105 shadow-lg' 
-                                        : 'bg-white/10 text-white/30 cursor-not-allowed'
-                                  }`}
-                              >
-                                  <Send size={20} />
-                              </button>
+                                    <Send size={20} />
+                                </button>
+                            </div>
                           </div>
                       </div>
                   </div>
